@@ -84,7 +84,11 @@ This will launch an interactive chat session. You can type `exit` at any time to
 
 ## Architecture
 
-The application is composed of three main components: a command-line interface (CLI), an MCP Client, and an MCP Server. The diagram below illustrates how they interact:
+The application's architecture is designed around an orchestrator (`ChatSession`) that manages the flow of information between the user, the Large Language Model (Gemini), and the local tool server (MCP Server).
+
+### Simplified View
+
+This diagram provides a high-level overview of the interaction, focusing on the main components and their roles.
 
 ```mermaid
 sequenceDiagram
@@ -102,6 +106,35 @@ sequenceDiagram
     MCP Server-->>MCP Client: Forwards the response
     MCP Client-->>CLI: Displays the response
     CLI-->>User: Shows the output
+```
+
+### Detailed View
+
+This diagram shows the complete and technically accurate flow, including the **MCP Client** which acts as the bridge between the application's logic and the tool server.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant ChatSession as Chat Session (Orchestrator)
+    participant GeminiAPI as Gemini API
+    participant MCPClient as MCP Client
+    participant MCPServer as MCP Server
+
+    User->>ChatSession: Enters command (e.g., "/kickoff")
+    ChatSession->>GeminiAPI: 1. Sends user prompt to LLM
+
+    GeminiAPI-->>ChatSession: 2. Returns response with a tool call request
+    
+    Note over ChatSession, MCPServer: ChatSession now needs to execute the tool
+    
+    ChatSession->>MCPClient: 3. Uses MCP Client to call the tool
+    MCPClient->>MCPServer: 4. Forwards tool call over the network
+    MCPServer-->>MCPClient: 5. Executes tool and returns result
+    MCPClient-->>ChatSession: 6. Client delivers result back to the orchestrator
+
+    ChatSession->>GeminiAPI: 7. Sends tool execution result back to LLM
+    GeminiAPI-->>ChatSession: 8. Returns final, natural language response
+    ChatSession-->>User: 9. Displays final response
 ```
 
 -----
