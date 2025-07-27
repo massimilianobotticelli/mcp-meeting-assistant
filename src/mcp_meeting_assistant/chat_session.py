@@ -1,5 +1,5 @@
 """
-This module manages an interactive chat session with the Gemini model,
+This module manages an interactive chat session with an LLM model,
 orchestrating calls to the MCP server for tools and prompts.
 It provides a structured way to handle user inputs, model responses,
 and tool executions in a conversational context.
@@ -12,7 +12,7 @@ from mcp_meeting_assistant.mcp_client import MCPClient
 
 class ChatSession:
     """
-    Manages an interactive chat session between a user and the Gemini model,
+    Manages an interactive chat session between a user and the LLM model,
     orchestrating calls to the MCP server for tools and prompts.
     """
 
@@ -21,7 +21,7 @@ class ChatSession:
         Initializes the ChatSession.
 
         Args:
-            llm_service: An object responsible for interfacing with the Gemini API.
+            llm_service: An object responsible for interfacing with the LLM API.
             mcp_client: A client for interacting with the MCP server.
         """
         self.llm_service: Any = llm_service
