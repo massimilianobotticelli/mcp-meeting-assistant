@@ -1,6 +1,6 @@
 # MCP Meeting Assistant
 
-This project is a demonstration of the **Model-View-Controller (MCP)** framework, showcasing a simple but powerful meeting assistant powered by Google's Gemini large language model (LLM). The assistant can schedule meetings, manage attendees, track action items, and generate summaries, all through an interactive command-line interface.
+This project is a demonstration of the **Model Context Protocol (MCP)** framework, showcasing a simple but powerful meeting assistant powered by Google's Gemini large language model (LLM). The assistant can schedule meetings, manage attendees, track action items, and generate summaries, all through an interactive command-line interface.
 
 ## Features
 
@@ -20,9 +20,8 @@ This project includes a [Dev Container](https://containers.dev/) configuration, 
 
 ### Prerequisites
 
-  * [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+  * [Docker](https://www.docker.com/)
   * [Visual Studio Code](https://code.visualstudio.com/)
-  * [Remote - Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) for Visual Studio Code
   * An API key for the Gemini API. You can get one from [Google AI Studio](https://makersuite.google.com/).
 
 ### Installation with Dev Container
@@ -152,4 +151,4 @@ Contributions are welcome\! If you have ideas for improvements or new features, 
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/massimilianobotticelli/mcp-meeting-assistant/blob/main/LICENSE) file for details.
