@@ -1,0 +1,23 @@
+[project]
+name = "mcp-meeting-assistant"
+version = "0.1.0"
+description = "Showcase for MCP with a simple Gemini-powered meeting assistant."
+readme = "README.md"
+authors = [{ name = "Massimiliano Botticelli", email = "massimiliano.botticelli@gmail.com" }]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+
+dependencies = [
+    "google-generativeai>=0.5.4",
+    "python-dotenv>=1.0.1",
+    "mcp[cli]>=1.8.0",
+    "fastapi>=0.111.0",
+    "prompt-toolkit>=3.0.51",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
