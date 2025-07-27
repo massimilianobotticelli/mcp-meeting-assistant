@@ -1,8 +1,17 @@
+"""
+This module provides an asynchronous client for managing a connection to a local
+MCP server running over standard I/O. It allows interaction with the server's tools
+and prompts, handling the lifecycle of the server process and providing methods to
+interact with its features.
+"""
+
 from contextlib import AsyncExitStack
-from typing import Any, List, Dict, Optional
+from typing import Any, Dict, List, Optional
+
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from mcp.types import Tool, CallToolResult
+from mcp.types import CallToolResult, Tool
+
 
 class MCPClient:
     """
@@ -40,7 +49,9 @@ class MCPClient:
         the client session.
         """
         server_params = StdioServerParameters(
-            command=self._command, args=self._args, env=self._env,
+            command=self._command,
+            args=self._args,
+            env=self._env,
         )
         stdio_transport = await self._exit_stack.enter_async_context(
             stdio_client(server_params)
@@ -75,7 +86,9 @@ class MCPClient:
         result = await self.session().list_tools()
         return result.tools
 
-    async def call_tool(self, tool_name: str, tool_input: Dict[str, Any]) -> CallToolResult:
+    async def call_tool(
+        self, tool_name: str, tool_input: Dict[str, Any]
+    ) -> CallToolResult:
         """
         Calls a specific tool on the MCP server with the given input.
 
@@ -88,7 +101,9 @@ class MCPClient:
         """
         return await self.session().call_tool(tool_name, tool_input)
 
-    async def run_prompt(self, name: str, arguments: Optional[Dict[str, Any]] = None) -> Optional[str]:
+    async def run_prompt(
+        self, name: str, arguments: Optional[Dict[str, Any]] = None
+    ) -> Optional[str]:
         """
         Gets a prompt from the server and returns its raw text content.
 
@@ -107,7 +122,7 @@ class MCPClient:
         if prompt_result and prompt_result.messages:
             return prompt_result.messages[0].content.text
         return None
-    
+
     async def list_prompts(self) -> List[str]:
         """
         Lists all available prompts on the MCP server.
@@ -117,7 +132,7 @@ class MCPClient:
         """
         if not self._session:
             raise ConnectionError("Not connected to the MCP server.")
-        
+
         prompts_result = await self.session().list_prompts()
         return [prompt.name for prompt in prompts_result.prompts]
 

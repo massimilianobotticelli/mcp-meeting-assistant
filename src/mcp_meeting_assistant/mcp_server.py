@@ -1,4 +1,9 @@
-# src/mcp_gemini/mcp_server_meetings.py
+"""
+This module defines a FastMCP server for managing meetings,
+including scheduling, adding attendees, action items, and generating summaries.
+It uses the MCP framework to create a structured server with tools and prompts.
+It is designed to be run as a standalone server application.
+"""
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.prompts import base
@@ -24,15 +29,16 @@ meetings: dict[str, dict] = {}
 
 # --- 3. Tool Definitions with Decorators ---
 
+
 @mcp.tool()
 def schedule_meeting(
-    topic: str = Field(description="The unique topic or title of the meeting.")
+    topic: str = Field(description="The unique topic or title of the meeting."),
 ):
     """Schedules a new, empty meeting with a given topic."""
     print(f"Executing: schedule_meeting for topic '{topic}'")
     if topic in meetings:
         return f"Error: A meeting with the topic '{topic}' already exists."
-    
+
     meetings[topic] = {"attendees": [], "action_items": []}
     return f"Successfully scheduled new meeting: '{topic}'"
 
@@ -40,13 +46,13 @@ def schedule_meeting(
 @mcp.tool()
 def add_attendee(
     topic: str = Field(description="The topic of the meeting to add an attendee to."),
-    name: str = Field(description="The name of the person attending the meeting.")
+    name: str = Field(description="The name of the person attending the meeting."),
 ):
     """Adds an attendee to a specific meeting."""
     print(f"Executing: add_attendee '{name}' to '{topic}'")
     if topic not in meetings:
         return f"Error: Meeting '{topic}' not found."
-    
+
     meetings[topic]["attendees"].append(name)
     return f"Successfully added attendee '{name}' to meeting '{topic}'."
 
@@ -54,39 +60,42 @@ def add_attendee(
 @mcp.tool()
 def add_action_item(
     topic: str = Field(description="The topic of the meeting for the action item."),
-    item: str = Field(description="The description of the action item.")
+    item: str = Field(description="The description of the action item."),
 ):
     """Adds an action item to a specific meeting."""
     print(f"Executing: add_action_item '{item}' for '{topic}'")
     if topic not in meetings:
         return f"Error: Meeting '{topic}' not found."
-    
+
     meetings[topic]["action_items"].append(item)
     return f"Successfully added action item to meeting '{topic}': '{item}'"
 
 
 @mcp.tool()
 def get_meeting_details(
-    topic: str = Field(description="The topic of the meeting to get details for.")
+    topic: str = Field(description="The topic of the meeting to get details for."),
 ):
     """Retrieves the attendees and action items for a specific meeting."""
     print(f"Executing: get_meeting_details for '{topic}'")
     if topic not in meetings:
         return f"Error: Meeting '{topic}' not found."
-        
+
     details = meetings[topic]
-    attendees = ", ".join(details['attendees']) if details['attendees'] else "None"
-    
-    if not details['action_items']:
+    attendees = ", ".join(details["attendees"]) if details["attendees"] else "None"
+
+    if not details["action_items"]:
         action_items_formatted = "No action items."
     else:
-        action_items_formatted = "\n".join(f"- {item}" for item in details['action_items'])
-        
+        action_items_formatted = "\n".join(
+            f"- {item}" for item in details["action_items"]
+        )
+
     return (
         f"Details for meeting '{topic}':\n"
         f"Attendees: {attendees}\n"
         f"Action Items:\n{action_items_formatted}"
     )
+
 
 @mcp.tool()
 def list_all_meetings():
@@ -96,12 +105,13 @@ def list_all_meetings():
         return "There are no meetings scheduled at the moment."
 
     meeting_topics = meetings.keys()
-    
+
     # Return a simple list of topics for the model to process
     return "\n".join(list(meeting_topics))
-    
+
 
 # --- 4. Prompt Definitions ---
+
 
 @mcp.prompt(
     name="minutes",

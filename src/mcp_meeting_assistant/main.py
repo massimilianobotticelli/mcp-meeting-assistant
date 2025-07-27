@@ -1,5 +1,3 @@
-# src/mcp_gemini/main.py
-
 """
 This is the main entry point for the command-line chat application.
 
@@ -18,8 +16,8 @@ from dotenv import load_dotenv
 
 # Corrected import paths to match the project structure
 from mcp_meeting_assistant.chat_session import ChatSession
-from mcp_meeting_assistant.models.gemini import Gemini
 from mcp_meeting_assistant.mcp_client import MCPClient
+from mcp_meeting_assistant.models.gemini import Gemini
 
 # Load environment variables from a .env file for configuration
 load_dotenv()
@@ -27,10 +25,11 @@ load_dotenv()
 # Define the path to the MCP server script, making it relative to this file's location
 SERVER_PATH = os.path.join(os.path.dirname(__file__), "mcp_server.py")
 
+
 async def main() -> None:
     """
     Sets up and runs the main application loop.
-    
+
     This function performs the following steps:
     1. Determines which LLM service to use based on environment variables.
     2. Initializes the chosen LLM service (e.g., Gemini).
@@ -51,21 +50,22 @@ async def main() -> None:
         # Using sys.executable ensures we use the same Python interpreter
         # that is running this script.
         command, args = (sys.executable, [SERVER_PATH])
-        
+
         # Connect to the MCP server. The client manages the server's lifecycle.
         mcp_client = await stack.enter_async_context(
             MCPClient(command=command, args=args)
         )
-        
+
         # Create the chat session, injecting the LLM service and MCP client
         chat_session = ChatSession(llm_service, mcp_client)
-        
+
         print("\n=======================================")
         print("Chat session started (type 'exit' to quit)")
         print("=======================================")
-        
+
         # Start the interactive loop
         await chat_session.run()
+
 
 if __name__ == "__main__":
     try:

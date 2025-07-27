@@ -1,13 +1,21 @@
-# src/mcp_gemini/gemini_model.py
+"""
+This module provides a wrapper for the Google Gemini API, allowing interaction
+with the Gemini model for generating text responses and executing tool calls.
+It includes methods for asking questions, managing conversation history,
+and handling tool requests in a format compatible with the Gemini API.
+"""
 
-import os
 import json
-from typing import Any, List, Dict, Optional
-from mcp_meeting_assistant.mcp_client import MCPClient
-from mcp.types import TextContent, Tool
+import os
+from typing import Any, Dict, List, Optional
+
 import google.generativeai as genai
-from google.generativeai.types import GenerateContentResponse
 from google.api_core import exceptions as google_exceptions
+from google.generativeai.types import GenerateContentResponse
+from mcp.types import TextContent, Tool
+
+from mcp_meeting_assistant.mcp_client import MCPClient
+
 
 def clean_schema(schema: Any) -> Any:
     """
@@ -35,7 +43,7 @@ def clean_schema(schema: Any) -> Any:
             else:
                 new_schema[key] = clean_schema(value)
         return new_schema
-    elif isinstance(schema, list):
+    if isinstance(schema, list):
         return [clean_schema(item) for item in schema]
     return schema
 
@@ -102,10 +110,13 @@ class Gemini:
         return text
 
     def chat(
-        self, messages: List[Dict[str, Any]], tools: Optional[List[Dict[str, Any]]] = None
+        self,
+        messages: List[Dict[str, Any]],
+        tools: Optional[List[Dict[str, Any]]] = None,
     ) -> Optional[GenerateContentResponse]:
         """
-        Sends a request to the Gemini API with a conversation history and handles potential server errors.
+        Sends a request to the Gemini API with a conversation history and handles potential server
+        errors.
 
         Args:
             messages: A list of message objects representing the conversation history.
@@ -118,17 +129,22 @@ class Gemini:
         params = {"contents": messages}
         if tools:
             params["tools"] = tools
-        
+
         try:
             return self.model.generate_content(**params)
         except google_exceptions.InternalServerError:
-            print("\n🔴 A temporary error occurred on the server (500). Please try your request again in a moment.")
+            print(
+                "\n🔴 A temporary error occurred on the server (500). Please try your request"
+                "again in a moment."
+            )
             return None
         except Exception as e:
             print(f"\nAn unexpected error occurred during the API call: {e}")
             return None
 
-    def add_message_to_history(self, messages: List[Dict[str, Any]], message: Dict[str, Any]) -> None:
+    def add_message_to_history(
+        self, messages: List[Dict[str, Any]], message: Dict[str, Any]
+    ) -> None:
         """
         Appends a new message to a list representing a conversation history.
 
@@ -169,13 +185,17 @@ class Gemini:
         mcp_tools: List[Tool] = await client.list_tools()
         for tool in mcp_tools:
             cleaned_schema = clean_schema(tool.inputSchema) if tool.inputSchema else {}
-            gemini_tools.append({
-                "function_declarations": [{
-                    "name": tool.name,
-                    "description": tool.description,
-                    "parameters": cleaned_schema,
-                }]
-            })
+            gemini_tools.append(
+                {
+                    "function_declarations": [
+                        {
+                            "name": tool.name,
+                            "description": tool.description,
+                            "parameters": cleaned_schema,
+                        }
+                    ]
+                }
+            )
         return gemini_tools
 
     async def execute_tool_requests(
@@ -193,21 +213,36 @@ class Gemini:
             A list of tool results formatted as `function_response` parts.
         """
         tool_response_parts: List[Dict[str, Any]] = []
-        if not (response and response.candidates and response.candidates[0].content.parts):
+        if not (
+            response and response.candidates and response.candidates[0].content.parts
+        ):
             return []
-            
-        function_calls = [p.function_call for p in response.candidates[0].content.parts if p.function_call]
+
+        function_calls = [
+            p.function_call
+            for p in response.candidates[0].content.parts
+            if p.function_call
+        ]
         for call in function_calls:
             tool_name = call.name
-            tool_input = {key: value for key, value in call.args.items()}
+            tool_input = call.args
             print(f"--- Calling tool: {tool_name} with input: {tool_input} ---")
             try:
                 tool_output = await client.call_tool(tool_name, tool_input)
                 items = tool_output.content if tool_output else []
-                output_content = json.dumps([item.text for item in items if isinstance(item, TextContent)])
+                output_content = json.dumps(
+                    [item.text for item in items if isinstance(item, TextContent)]
+                )
             except Exception as e:
-                output_content = json.dumps({"error": f"Error executing tool '{tool_name}': {e}"})
-            tool_response_parts.append({
-                "function_response": {"name": tool_name, "response": {"content": output_content}}
-            })
+                output_content = json.dumps(
+                    {"error": f"Error executing tool '{tool_name}': {e}"}
+                )
+            tool_response_parts.append(
+                {
+                    "function_response": {
+                        "name": tool_name,
+                        "response": {"content": output_content},
+                    }
+                }
+            )
         return tool_response_parts
