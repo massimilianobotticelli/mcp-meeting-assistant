@@ -15,6 +15,7 @@ from google.generativeai.types import GenerateContentResponse
 from mcp.types import TextContent, Tool
 
 from mcp_meeting_assistant.mcp_client import MCPClient
+from mcp_meeting_assistant.models.model import Model
 
 
 def clean_schema(schema: Any) -> Any:
@@ -48,7 +49,7 @@ def clean_schema(schema: Any) -> Any:
     return schema
 
 
-class Gemini:
+class Gemini(Model):
     """
     A wrapper for the Google Gemini API, responsible for making API calls,
     formatting data, and handling API-specific errors.
