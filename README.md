@@ -86,32 +86,6 @@ This will launch an interactive chat session. You can type `exit` at any time to
 
 The application's architecture is designed around an orchestrator (`ChatSession`) that manages the flow of information between the user, the Large Language Model (Gemini), and the local tool server (MCP Server).
 
-### Simplified View
-
-This diagram provides a high-level overview of the interaction, focusing on the main components and their roles.
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant CLI
-    participant MCP Client
-    participant MCP Server
-    participant Gemini API
-
-    User->>CLI: Enters a command (e.g., "/kickoff")
-    CLI->>MCP Client: Sends command to the client
-    MCP Client->>MCP Server: Forwards command to the server
-    MCP Server->>Gemini API: Sends prompt to the Gemini API
-    Gemini API-->>MCP Server: Returns generated response
-    MCP Server-->>MCP Client: Forwards the response
-    MCP Client-->>CLI: Displays the response
-    CLI-->>User: Shows the output
-```
-
-### Detailed View
-
-This diagram shows the complete and technically accurate flow, including the **MCP Client** which acts as the bridge between the application's logic and the tool server.
-
 ```mermaid
 sequenceDiagram
     participant User
