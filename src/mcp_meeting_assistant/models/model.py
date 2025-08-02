@@ -10,12 +10,23 @@ from typing import Any, Dict, List, Optional
 from google.generativeai.types import GenerateContentResponse
 
 from mcp_meeting_assistant.mcp_client import MCPClient
+from mcp.client.session import RequestContext
+from mcp.types import (
+    CreateMessageRequestParams,
+    CreateMessageResult,
+)
 
 
 class Model(ABC):
     """
     Abstract base class for all model wrappers.
     """
+
+    @abstractmethod
+    async def sampling_callback(
+        self, context: RequestContext, params: CreateMessageRequestParams
+    ) -> CreateMessageResult:
+        pass
 
     @abstractmethod
     def ask(self, question: str, messages_history: List[Dict[str, Any]]) -> str:
