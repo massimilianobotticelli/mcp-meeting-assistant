@@ -13,12 +13,7 @@ import google.generativeai as genai
 from google.api_core import exceptions as google_exceptions
 from google.generativeai.types import GenerateContentResponse
 from mcp.client.session import RequestContext
-from mcp.types import (
-    CreateMessageRequestParams,
-    CreateMessageResult,
-    TextContent,
-    Tool,
-)
+from mcp.types import CreateMessageRequestParams, CreateMessageResult, TextContent, Tool
 
 from mcp_meeting_assistant.mcp_client import MCPClient
 from mcp_meeting_assistant.models.model import Model

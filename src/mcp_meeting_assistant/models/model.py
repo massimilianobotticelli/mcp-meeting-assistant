@@ -8,13 +8,10 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 from google.generativeai.types import GenerateContentResponse
+from mcp.client.session import RequestContext
+from mcp.types import CreateMessageRequestParams, CreateMessageResult
 
 from mcp_meeting_assistant.mcp_client import MCPClient
-from mcp.client.session import RequestContext
-from mcp.types import (
-    CreateMessageRequestParams,
-    CreateMessageResult,
-)
 
 
 class Model(ABC):

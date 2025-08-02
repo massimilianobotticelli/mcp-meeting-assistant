@@ -5,9 +5,9 @@ It uses the MCP framework to create a structured server with tools and prompts.
 It is designed to be run as a standalone server application.
 """
 
-from mcp.types import SamplingMessage, TextContent
-from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.fastmcp import Context, FastMCP
 from mcp.server.fastmcp.prompts import base
+from mcp.types import SamplingMessage, TextContent
 from pydantic import Field
 
 # --- 1. Server Initialization with System Prompt ---
@@ -110,6 +110,7 @@ def list_all_meetings():
     # Return a simple list of topics for the model to process
     return "\n".join(list(meeting_topics))
 
+
 @mcp.tool()
 async def brainstorm_action_items(
     ctx: Context,
@@ -131,7 +132,9 @@ async def brainstorm_action_items(
     # Make a direct LLM call with high temperature for creative brainstorming
     result = await ctx.session.create_message(
         messages=[
-            SamplingMessage(role="user", content=TextContent(type="text", text=prompt_text))
+            SamplingMessage(
+                role="user", content=TextContent(type="text", text=prompt_text)
+            )
         ],
         # max_tokens=500,
         temperature=0.9,  # High temp fosters creativity and diverse ideas
