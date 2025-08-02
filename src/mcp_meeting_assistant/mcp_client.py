@@ -6,7 +6,7 @@ interact with its features.
 """
 
 from contextlib import AsyncExitStack
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Coroutine, Dict, List, Optional
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -28,6 +28,9 @@ class MCPClient:
         command: str,
         args: List[str],
         env: Optional[Dict[str, str]] = None,
+        sampling_callback: Optional[
+            Callable[[Any, Any], Coroutine[Any, Any, Any]]
+        ] = None,
     ):
         """
         Initializes the MCPClient.
@@ -36,12 +39,14 @@ class MCPClient:
             command: The command to execute the server (e.g., 'python').
             args: A list of arguments for the command (e.g., ['path/to/server.py']).
             env: An optional dictionary of environment variables for the server process.
+            sampling_callback: An async function to handle LLM calls from the server.
         """
         self._command: str = command
         self._args: List[str] = args
         self._env: Optional[Dict[str, str]] = env
         self._session: Optional[ClientSession] = None
         self._exit_stack: AsyncExitStack = AsyncExitStack()
+        self._sampling_callback = sampling_callback
 
     async def connect(self) -> None:
         """
@@ -58,7 +63,7 @@ class MCPClient:
         )
         _stdio, _write = stdio_transport
         self._session = await self._exit_stack.enter_async_context(
-            ClientSession(_stdio, _write)
+            ClientSession(_stdio, _write, sampling_callback=self._sampling_callback)
         )
         await self._session.initialize()
 

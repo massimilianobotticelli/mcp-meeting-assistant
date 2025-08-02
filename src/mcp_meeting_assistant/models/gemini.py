@@ -12,7 +12,13 @@ from typing import Any, Dict, List, Optional
 import google.generativeai as genai
 from google.api_core import exceptions as google_exceptions
 from google.generativeai.types import GenerateContentResponse
-from mcp.types import TextContent, Tool
+from mcp.client.session import RequestContext
+from mcp.types import (
+    CreateMessageRequestParams,
+    CreateMessageResult,
+    TextContent,
+    Tool,
+)
 
 from mcp_meeting_assistant.mcp_client import MCPClient
 from mcp_meeting_assistant.models.model import Model
@@ -67,6 +73,49 @@ class Gemini(Model):
         # This disables strict response validation, which can help prevent
         # crashes from unrecognized enum values like 'FinishReason: 12'.
         self.model._check_response_type = False
+
+    async def sampling_callback(
+        self, context: RequestContext, params: CreateMessageRequestParams
+    ) -> CreateMessageResult:
+        """
+        Handles LLM sampling requests originating from a server-side tool.
+        This is passed to the MCPClient during initialization.
+
+        Args:
+            context: The request context, provided by the MCP session.
+            params: The parameters for the message creation, including the messages
+                    and sampling settings like temperature.
+
+        Returns:
+            A CreateMessageResult object containing the model's response.
+        """
+        print("--- Server triggered sampling callback ---")
+        messages = []
+        for msg in params.messages:
+            role = "model" if msg.role == "assistant" else msg.role
+            if msg.content.type == "text":
+                messages.append({"role": role, "parts": [msg.content.text]})
+
+        # Build generation config, respecting sampling params from the server
+        generation_config_args = {"max_output_tokens": params.max_tokens}
+        if params.temperature is not None:
+            generation_config_args["temperature"] = params.temperature
+        if params.top_p is not None:
+            generation_config_args["top_p"] = params.top_p
+
+        generation_config = genai.types.GenerationConfig(**generation_config_args)
+
+        # Call the Gemini API with the provided messages and config
+        response = await self.model.generate_content_async(
+            messages,
+            generation_config=generation_config,
+        )
+
+        return CreateMessageResult(
+            role="assistant",
+            model=self.model.model_name,
+            content=TextContent(type="text", text=response.text),
+        )
 
     def ask(self, question: str, messages_history: List[Dict[str, Any]]) -> str:
         """

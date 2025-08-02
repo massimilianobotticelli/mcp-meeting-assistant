@@ -5,7 +5,8 @@ It uses the MCP framework to create a structured server with tools and prompts.
 It is designed to be run as a standalone server application.
 """
 
-from mcp.server.fastmcp import FastMCP
+from mcp.types import SamplingMessage, TextContent
+from mcp.server.fastmcp import FastMCP, Context
 from mcp.server.fastmcp.prompts import base
 from pydantic import Field
 
@@ -108,6 +109,38 @@ def list_all_meetings():
 
     # Return a simple list of topics for the model to process
     return "\n".join(list(meeting_topics))
+
+@mcp.tool()
+async def brainstorm_action_items(
+    ctx: Context,
+    topic: str = Field(description="The topic of the meeting to brainstorm for."),
+    context_summary: str = Field(
+        description="A brief summary of the meeting's context or goals."
+    ),
+):
+    """Brainstorms new, creative action items for a meeting based on its topic and context."""
+    print(f"Executing: brainstorm_action_items for topic '{topic}'")
+
+    prompt_text = f"""
+    For a meeting about "{topic}", the main goal is: "{context_summary}".
+
+    Based on this, suggest three creative and impactful new action items.
+    Format the output as a simple list.
+    """
+
+    # Make a direct LLM call with high temperature for creative brainstorming
+    result = await ctx.session.create_message(
+        messages=[
+            SamplingMessage(role="user", content=TextContent(type="text", text=prompt_text))
+        ],
+        # max_tokens=500,
+        temperature=0.9,  # High temp fosters creativity and diverse ideas
+        system_prompt="You are a creative strategist who comes up with great action items.",
+    )
+
+    if result.content.type == "text":
+        return result.content.text
+    raise ValueError("Brainstorming failed")
 
 
 # --- 4. Prompt Definitions ---

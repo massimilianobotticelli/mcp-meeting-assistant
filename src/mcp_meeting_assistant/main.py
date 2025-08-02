@@ -53,7 +53,11 @@ async def main() -> None:
 
         # Connect to the MCP server. The client manages the server's lifecycle.
         mcp_client = await stack.enter_async_context(
-            MCPClient(command=command, args=args)
+            MCPClient(
+                command=command,
+                args=args,
+                sampling_callback=llm_service.sampling_callback,
+            )
         )
 
         # Create the chat session, injecting the LLM service and MCP client
