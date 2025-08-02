@@ -110,6 +110,7 @@ def list_all_meetings():
     # Return a simple list of topics for the model to process
     return "\n".join(list(meeting_topics))
 
+# --- 4. Sampling Methods ---
 
 @mcp.tool()
 async def brainstorm_action_items(
@@ -136,7 +137,6 @@ async def brainstorm_action_items(
                 role="user", content=TextContent(type="text", text=prompt_text)
             )
         ],
-        # max_tokens=500,
         temperature=0.9,  # High temp fosters creativity and diverse ideas
         system_prompt="You are a creative strategist who comes up with great action items.",
     )
@@ -146,7 +146,7 @@ async def brainstorm_action_items(
     raise ValueError("Brainstorming failed")
 
 
-# --- 4. Prompt Definitions ---
+# --- 5. Prompt Definitions ---
 
 
 @mcp.prompt(
