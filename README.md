@@ -108,7 +108,7 @@ sequenceDiagram
     MCPServer-->>MCPClient: 5. Executes tool and returns result
     MCPClient-->>ChatSession: 6. Client delivers result back to the orchestrator
 
-    Note over MCPServer, GeminiAPI: Some tools (e.g., brainstorming) can trigger LLM completions via a sampling callback
+    Note over MCPServer, GeminiAPI: Some tools can trigger LLM completions via a sampling callback
 
     ChatSession->>GeminiAPI: 7. Sends tool execution result back to LLM
     GeminiAPI-->>ChatSession: 8. Returns final, natural language response
