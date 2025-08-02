@@ -9,6 +9,7 @@ This project is a demonstration of the **Model Context Protocol (MCP)** framewor
   * **Manage Attendees**: Add participants to any scheduled meeting.
   * **Track Action Items**: Record action items for each meeting.
   * **Generate Summaries**: Get a quick overview of a meeting's details.
+  * **LLM-Powered Brainstorming**: Ask for brainstorming or creative suggestions in natural language (e.g., "Help me brainstorm action items for our next meeting"), and the assistant will use the LLM to generate ideas.
   * **Slash Commands**: Use simple slash commands for common actions like `/kickoff` to start a new project meeting or `/minutes` to generate meeting minutes.
   * **Demo Mode**: Quickly populate the application with sample data using the `/demo` command to see it in action.
 
@@ -82,9 +83,10 @@ This will launch an interactive chat session. You can type `exit` at any time to
 
 -----
 
+
 ## Architecture
 
-The application's architecture is designed around an orchestrator (`ChatSession`) that manages the flow of information between the user, the Large Language Model (Gemini), and the local tool server (MCP Server).
+The application's architecture is designed around an orchestrator (`ChatSession`) that manages the flow of information between the user, the Large Language Model (Gemini), and the local tool server (MCP Server). The system now supports **LLM-powered tool calls**: server-side tools can trigger LLM completions via a sampling callback, enabling advanced features like creative brainstorming directly from the server.
 
 ```mermaid
 sequenceDiagram
@@ -100,11 +102,13 @@ sequenceDiagram
     GeminiAPI-->>ChatSession: 2. Returns response with a tool call request
     
     Note over ChatSession, MCPServer: ChatSession now needs to execute the tool
-    
+
     ChatSession->>MCPClient: 3. Uses MCP Client to call the tool
     MCPClient->>MCPServer: 4. Forwards tool call over the network
     MCPServer-->>MCPClient: 5. Executes tool and returns result
     MCPClient-->>ChatSession: 6. Client delivers result back to the orchestrator
+
+    Note over MCPServer, GeminiAPI: Some tools (e.g., brainstorming) can trigger LLM completions via a sampling callback
 
     ChatSession->>GeminiAPI: 7. Sends tool execution result back to LLM
     GeminiAPI-->>ChatSession: 8. Returns final, natural language response
@@ -139,14 +143,16 @@ This structure clearly separates the application's core logic (`src/mcp_meeting_
 
 ## Extensibility
 
-### Using Other LLMs
+### Using Other LLMs and LLM Callbacks
 
-The project is designed to be easily adaptable to other Large Language Models. The `src/mcp_meeting_assistant/models/gemini.py` file provides a wrapper for the Google Gemini API and can be used as a template for integrating other models.
+The project is designed to be easily adaptable to other Large Language Models. The `src/mcp_meeting_assistant/models/gemini.py` file provides a wrapper for the Google Gemini API and now exposes a `sampling_callback` method. This callback enables the MCP server to trigger LLM completions from within server-side tools (such as `brainstorm`).
 
 To switch to a different LLM, you would need to:
 
-1.  Create a new wrapper class in the `models` directory that conforms to the same interface as the `Gemini` class.
-2.  Update the `main.py` file to instantiate your new LLM client instead of the `Gemini` client.
+1.  Create a new wrapper class in the `models` directory that conforms to the same interface as the `Gemini` class, including a compatible `sampling_callback`.
+2.  Update the `main.py` file to instantiate your new LLM client and pass its callback to the `MCPClient`.
+
+This design allows for advanced, LLM-powered tool logic on the server, making it easy to extend the assistant with new AI-driven features.
 
 -----
 
